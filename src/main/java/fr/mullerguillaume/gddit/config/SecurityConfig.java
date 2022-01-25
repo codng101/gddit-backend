@@ -5,6 +5,7 @@ import fr.mullerguillaume.gddit.security.JwtAuthenticationFilter;
 import lombok.AllArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.BeanIds;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -34,6 +35,29 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         httpSecurity.csrf().disable()
                 .authorizeRequests()
                 .antMatchers("/api/auth/**")
+                .permitAll()
+                .antMatchers(HttpMethod.GET, "/api/subreddit")
+                .permitAll()
+                .antMatchers(HttpMethod.GET, "/api/posts/")
+                .permitAll()
+                .antMatchers(HttpMethod.GET, "/api/posts/**")
+                .permitAll()
+                .antMatchers(HttpMethod.OPTIONS, "/api/subreddit")
+                .permitAll()
+                .antMatchers(HttpMethod.OPTIONS, "/api/posts/")
+                .permitAll()
+                .antMatchers(HttpMethod.OPTIONS, "/api/posts/**")
+                .permitAll()
+                .antMatchers(HttpMethod.OPTIONS, "/api/comments/**")
+                .permitAll()
+                .antMatchers(HttpMethod.OPTIONS, "/api/votes/**")
+                .permitAll()
+                .antMatchers("/v2/api-docs",
+                        "/configuration/ui",
+                        "/swagger-resources/**",
+                        "/configuration/security",
+                        "/swagger-ui.html",
+                        "/webjars/**")
                 .permitAll()
                 .anyRequest()
                 .authenticated();
