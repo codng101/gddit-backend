@@ -32,7 +32,7 @@ public class JwtProvider {
         try {
             keyStore = KeyStore.getInstance("JKS");
             InputStream resourceAsStream = getClass().getResourceAsStream("/guddit.jks");
-            keyStore.load(resourceAsStream, "*******".toCharArray());
+            keyStore.load(resourceAsStream, "nhuk0gres1".toCharArray());
         } catch (KeyStoreException | CertificateException | NoSuchAlgorithmException | IOException e) {
             throw new GudditException("Exception occurred while loading keystore");
         }
@@ -60,7 +60,7 @@ public class JwtProvider {
 
     private PrivateKey getPrivateKey() {
         try {
-            return (PrivateKey) keyStore.getKey("guddit", "*******".toCharArray());
+            return (PrivateKey) keyStore.getKey("guddit", "nhuk0gres1".toCharArray());
         } catch (KeyStoreException | NoSuchAlgorithmException | UnrecoverableKeyException e) {
             throw new GudditException("Exception occured while retrieving public key from keystore");
         }

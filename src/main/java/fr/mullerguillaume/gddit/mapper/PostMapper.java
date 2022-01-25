@@ -3,17 +3,19 @@ package fr.mullerguillaume.gddit.mapper;
 import com.github.marlonlom.utilities.timeago.TimeAgo;
 import fr.mullerguillaume.gddit.dto.PostRequest;
 import fr.mullerguillaume.gddit.dto.PostResponse;
-import fr.mullerguillaume.gddit.model.Post;
-import fr.mullerguillaume.gddit.model.Subreddit;
-import fr.mullerguillaume.gddit.model.User;
+import fr.mullerguillaume.gddit.model.*;
 import fr.mullerguillaume.gddit.repository.CommentRepository;
 import fr.mullerguillaume.gddit.repository.VoteRepository;
 import fr.mullerguillaume.gddit.service.AuthService;
+import com.github.marlonlom.utilities.timeago.TimeAgo;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-
-
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.Optional;
+
+import static fr.mullerguillaume.gddit.model.VoteType.DOWNVOTE;
+import static fr.mullerguillaume.gddit.model.VoteType.UPVOTE;
 
 @Mapper(componentModel = "spring")
 public abstract class PostMapper {
@@ -30,6 +32,7 @@ public abstract class PostMapper {
     @Mapping(target = "description", source = "postRequest.description")
     @Mapping(target = "subreddit", source = "subreddit")
     @Mapping(target = "voteCount", constant = "0")
+    @Mapping(target = "user", source = "user")
     public abstract Post map(PostRequest postRequest, Subreddit subreddit, User user);
 
     @Mapping(target = "id", source = "postId")
@@ -37,6 +40,8 @@ public abstract class PostMapper {
     @Mapping(target = "userName", source = "user.username")
     @Mapping(target = "commentCount", expression = "java(commentCount(post))")
     @Mapping(target = "duration", expression = "java(getDuration(post))")
+    @Mapping(target = "upVote", expression = "java(isPostUpVoted(post))")
+    @Mapping(target = "downVote", expression = "java(isPostDownVoted(post))")
     public abstract PostResponse mapToDto(Post post);
 
     Integer commentCount(Post post) {
@@ -46,4 +51,23 @@ public abstract class PostMapper {
     String getDuration(Post post) {
         return TimeAgo.using(post.getCreatedDate().toEpochMilli());
     }
+
+    boolean isPostUpVoted(Post post) {
+        return checkVoteType(post, UPVOTE);
+    }
+
+    boolean isPostDownVoted(Post post) {
+        return checkVoteType(post, DOWNVOTE);
+    }
+
+    private boolean checkVoteType(Post post, VoteType voteType) {
+        if (authService.isLoggedIn()) {
+            Optional<Vote> voteForPostByUser = voteRepository.findTopByPostAndUserOrderByVoteIdDesc(post,
+                    authService.getCurrentUser());
+            return voteForPostByUser.filter(vote -> vote.getVoteType().equals(voteType))
+                    .isPresent();
+        }
+        return false;
+    }
+
 }
